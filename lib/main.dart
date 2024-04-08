@@ -1,4 +1,5 @@
 import 'package:demo_casa_3/screens/generals/login.dart';
+import 'package:demo_casa_3/screens/generals/colores.dart';
 import 'package:flutter/material.dart';
 
 Future<void> main() async {
@@ -18,7 +19,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor: const Color.fromARGB(255, 13, 161, 154),
+        primaryColor: appBarcolor,
       ),
       home: Login(),
     );

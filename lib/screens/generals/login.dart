@@ -1,11 +1,11 @@
-import 'package:demo_casa_3/screens/data/moderadoresClass.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'package:demo_casa_3/screens/generals/colores.dart';
 import 'package:demo_casa_3/services/services.dart';
 import 'package:flutter/material.dart';
 
 import 'package:demo_casa_3/screens/generals/recupwd.dart';
-import 'package:demo_casa_3/screens/generals/register.dart';
-import 'package:demo_casa_3/screens/users/md/mdUser.dart';
-import 'package:demo_casa_3/screens/users/rp/rpUser.dart';
+import 'package:demo_casa_3/screens/users/mdUser.dart';
 import 'icons.dart';
 
 class Login extends StatefulWidget {
@@ -16,24 +16,21 @@ class Login extends StatefulWidget {
 class _LoginState extends State <Login>{
   TextEditingController user = new TextEditingController();
   TextEditingController pswd = new TextEditingController();
+  bool isAdmin = false;
 
   @override
   Widget build (BuildContext context){
-    Color iconcolor = Colors.black45;
     double sizeicon = 17;
     bool responsive_ = MediaQuery.of(context).size.width<1100;
     return Scaffold(
       body: Container(
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Color.fromARGB(255,86,86,86),
-                Color.fromARGB(255,143,216,196),
-              ]
+              colors: [BGgradLoginSUP,BGgradLoginINF],
             )
           ),
         child: Center(
@@ -61,8 +58,8 @@ class _LoginState extends State <Login>{
                   style: TextStyle(
                     fontSize: 50,
                     fontWeight: FontWeight.w500,
-                    fontFamily: 'Retrolight', //NeonBlitz - Retrolight - street
-                    color: Color.fromARGB(255,237,39,136),
+                    fontFamily: 'Retrolight', 
+                    color: fucsia,
                   ),
                 ),
                 SizedBox( height: 20,),
@@ -70,14 +67,14 @@ class _LoginState extends State <Login>{
                   width: responsive_? MediaQuery.of(context).size.width*0.70:350,
                   padding: EdgeInsets.all(responsive_?15:30),
                   decoration: BoxDecoration(
-                    color: Color.fromARGB(192, 230, 204, 179),
+                    color: BGform,
                     borderRadius: BorderRadius.circular(10)
                   ),
                   child: Column(
                     children: [
                       Text("Inicia Sesión",
                         style: TextStyle(
-                          color: iconcolor,
+                          color: iconColorForm,
                           fontFamily: "Wenstern",
                           fontSize: 30,
                           fontWeight: FontWeight.w600,
@@ -89,7 +86,7 @@ class _LoginState extends State <Login>{
                         decoration: InputDecoration(
                           labelText: 'Usuario',
                           enabled: true,
-                          suffixIcon: Icon(iconUsuario, size:sizeicon,color: iconcolor,),
+                          suffixIcon: Icon(iconUsuario, size:sizeicon,color: iconColorForm,),
                         ),
                         validator: (value) {
                           if(value!.length == 0){
@@ -101,12 +98,12 @@ class _LoginState extends State <Login>{
                       ),
                       SizedBox(height: 10,),
                       TextFormField(
-                        obscureText: true,
+                        obscureText: false,
                         controller: pswd,
                         decoration: InputDecoration(
                           labelText: 'Contraseña',
                           enabled: true,
-                          suffixIcon: Icon(iconPassword, size:sizeicon,color: iconcolor,),
+                          suffixIcon: Icon(iconPassword, size:sizeicon,color: iconColorForm,),
                         ),
                         validator: (value) {
                           RegExp regex = new RegExp(r'^.{6,}$');
@@ -119,7 +116,6 @@ class _LoginState extends State <Login>{
                             return null;
                           }
                         },
-                        onChanged: (value) {},
                       ),
                       SizedBox(height: responsive_?15:5,),
                       GestureDetector(
@@ -132,11 +128,11 @@ class _LoginState extends State <Login>{
                           children: [
                             Container(
                               width: 300,
-                              child: const Text('Olvidé mi contraseña',
+                              child: Text('Olvidé mi contraseña',
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: Color.fromARGB(255,237,39,136),
+                                  color: fucsia,
                                 ),
                               ),
                             ),
@@ -146,7 +142,7 @@ class _LoginState extends State <Login>{
                       SizedBox(height: responsive_?40:25,),
                       TextButton(
                         style: TextButton.styleFrom(
-                          backgroundColor: Color.fromARGB(255,237,39,136),
+                          backgroundColor: fucsia,
                           padding: EdgeInsets.symmetric(vertical:responsive_? 10.0:20.0, horizontal:50.0),//mobile:desktop 
                         ),
                         child: const Text('entrar', style: TextStyle(
@@ -157,36 +153,66 @@ class _LoginState extends State <Login>{
                           ),
                         ),
                         onPressed: () async{
-                          //Services().getModerators();
-                          //getAllModeradores();                  
-                          if(user.text.toLowerCase()=="rp"){
-                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>RpUser(usuario: user.text)));
-                          }
-                          if(user.text.toLowerCase()=="admin"){
-                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>MdUser(usuario: user.text,)));
-                          }
-                          if(user.text.toLowerCase()=="mod"){
-                            //Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>MdUser(usuario: user.text,)));
+                          var resAdministrator;
+                          var resModerator;
+                          //LOGIN ADMINISTRADOR
+                          try{
+                            if(isAdmin){
+                              print('Es ADMIN');
+                              resAdministrator = await Services().login_Adm(user.text,pswd.text);
+                              if(resAdministrator!=null){
+                                resAdministrator!=null? print('CODE adm:${resAdministrator.statusCode}'): print('CODE adm: null');
+                                var data = jsonDecode(resAdministrator.body);
+                                print('data'+data.toString());
+                                setState(() {
+                                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>MdUser(response: data,)));
+                                });
+                              }else{
+                                showAlertLogin();
+                              }
+                            }else{
+                              print('Es MOD');
+                              resModerator = await Services().login_Mod(user.text,pswd.text);
+                              resModerator!=null? print('CODE mod:${resModerator.statusCode}'): print('CODE mod: null');
+                              
+                              if(resModerator!=null){
+                                var data = jsonDecode(resModerator.body);
+                                print('data'+data.toString());
+                                setState(() {
+                                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>MdUser(response: data,)));
+                                });
+                              }else{
+                                showAlertLogin();
+                              }
+
+                            }
+                          }catch(e){
+                            showAlertLogin();
+                            print("Error $e");
                           }
                         },  
                       ),
                       SizedBox(height: responsive_?20:10,),
-                      GestureDetector( 
-                        onTap: () {
-                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>Register()));
+                      FilledButton(
+                        onPressed: (){
+                          setState(() {
+                            isAdmin = !isAdmin;
+                          });
                         },
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text("Crear una cuenta",
-                              textAlign: TextAlign.justify,
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  color: Color.fromARGB(255,237,39,136),
-                                ),
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStatePropertyAll<Color>(isAdmin?Color.fromARGB(70, 179, 82, 166): Color.fromARGB(0, 255, 255, 255)),
+                          shape:MaterialStatePropertyAll(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(70),
+                              side: BorderSide(width: isAdmin?1.0:0.0,color: isAdmin?fucsia:BGform), )
+                          ),
+                        ), 
+                        child: Text("Soy administrador!",
+                          textAlign: TextAlign.justify,
+                          style: TextStyle(
+                              fontSize: 13,
+                              color: fucsia,
                             ),
-                          ],
                         ),
                       ),
                       SizedBox(height: responsive_?10:1,),
@@ -198,6 +224,54 @@ class _LoginState extends State <Login>{
           ),
         ),
       ),
+    );
+  }
+
+  void showAlertLogin(){
+    showDialog(
+      barrierDismissible: false,
+      context: context, 
+      builder: (BuildContext context){
+        return AlertDialog(
+          insetPadding: EdgeInsets.all(20),
+          content: StatefulBuilder(
+            builder: (BuildContext contex, StateSetter setState){
+              return Container(
+                height:50,
+                child: const Column(
+                  children: [
+                    Text('Error de inicio de sesión',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text('No se encontró el usuario',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                )
+              );
+            },
+          ),
+          actions: [
+          FilledButton(
+            child: Text('Aceptar'),
+            onPressed: (){
+              setState(() {
+                //limpia variables
+                //user.text="";
+                //pswd.text="";
+                Navigator.of(context).pop();
+              });
+            }, 
+          ),
+        ],
+        );
+      },
     );
   }
 }

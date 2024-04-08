@@ -19,6 +19,7 @@ dependencies:
   timeline_tile: ^2.0.0
   getwidget: ^4.0.0
   http: ^1.2.0
+  toastification: ^1.2.1
   
   pretty_qr_code: ^3.2.1
   qr_code_scanner: ^1.0.1
