@@ -1,20 +1,21 @@
 import 'package:demo_casa_3/screens/data/moderators.dart';
+import 'package:demo_casa_3/screens/generals/colores.dart';
 import 'package:demo_casa_3/screens/generals/icons.dart';
+import 'package:demo_casa_3/screens/users/admin/desktop/transMd.dart';
 import 'package:demo_casa_3/services/services.dart';
 import 'package:flutter/material.dart';
+import 'package:toastification/toastification.dart';
 
 //
 TextEditingController ctrl_nombre = new TextEditingController();
+TextEditingController ctrl_contra = new TextEditingController();
+TextEditingController ctrl_email = new TextEditingController();
 TextEditingController ctrl_query = new TextEditingController();
 bool iconSearchBarCancel=false;
-bool flag_permiso1 = false;
-bool flag_permiso2 = false;
-bool flag_permiso3 = false;
-bool flag_permiso4 = false;
-bool flag_permiso5 = false;
 
 class ModeradoresMD extends StatefulWidget {
-  const ModeradoresMD({super.key});
+  String token;
+  ModeradoresMD({super.key,required this.token});
 
   @override
   State<ModeradoresMD> createState() => _ModeradoresMDState();
@@ -23,8 +24,19 @@ class ModeradoresMD extends StatefulWidget {
 class _ModeradoresMDState extends State<ModeradoresMD> {
   bool sortAscending = true;
   bool editflag = false;
+  bool isLoading = true;
+  bool errorHttp = false;
+  int selectedPanel = -1;
+  Color tileSelectedColor = Colors.white;
   Color checkColor = Color.fromARGB(255, 51, 72, 135);
-  late List<Moderators> lista; 
+  late List<Moderators> allModerators;
+  late List<Moderators> filteredModerators;
+  late Widget userDataPanel;
+  String errorAdvice='';
+  double drawerSize = 250;
+  bool showPanel = false;
+  Icon openPanel = Icon(Icons.arrow_forward_ios,size: 17,color: color1);
+  Icon closePanel = Icon(Icons.arrow_back_ios,size: 17,color: color6);
 
   onSortColumn(int colIndex, bool ascending){
     if(colIndex==0){
@@ -37,305 +49,386 @@ class _ModeradoresMDState extends State<ModeradoresMD> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    
-    double MQwidth = MediaQuery.of(context).size.width;
-    bool responsive = MQwidth<1100? true:false;
-    
-    return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        child: Icon(iconAdd),
-        elevation:5.0,
-        onPressed: (){
-          showDialog(
-            barrierDismissible: false,
-            context: context, 
-            builder: (BuildContext context){
-              return AlertDialog(
-                content: StatefulBuilder(
-                  builder: (BuildContext contex, StateSetter setState){
-                    return Container(
-                      height:300,
-                      width: 300,
-                      child: Column(
-                        children: [
-                          TextFormField(
-                            controller: ctrl_nombre,
-                            decoration: const InputDecoration(
-                              labelText: 'Nombre',
-                              labelStyle: TextStyle(fontSize: 14),
-                              enabled: true,
-                            ),
-                          ),
-                          SizedBox(height: 20,),
-                          Row(
-                            children:[
-                              Text('Permiso 1'),
-                              SizedBox(width: 5,),
-                              Transform.scale(
-                                scale: 0.7,
-                                child: Switch(
-                                value: flag_permiso1,
-                                activeColor: Color.fromARGB(255, 57, 132, 59),
-                                onChanged: (value){
-                                  setState(() {
-                                    flag_permiso1=value;
-                                  });
-                                }),
-                              )
-                            ],
-                          ),
-                          SizedBox(height: 5,),
-                          Row(
-                            children:[
-                              Text('Permiso 2'),
-                              SizedBox(width: 10,),
-                              Transform.scale(
-                                scale: 0.7,
-                                child: Switch(
-                                value: flag_permiso2,
-                                activeColor: Color.fromARGB(255, 57, 132, 59),
-                                onChanged: (value){
-                                  setState(() {
-                                    flag_permiso2=value;
-                                  });
-                                }),
-                              )
-                            ],
-                          ),
-                          SizedBox(height: 5,),
-                          Row(
-                            children:[
-                              Text('Permiso 3'),
-                              SizedBox(width: 10,),
-                              Transform.scale(
-                                scale: 0.7,
-                                child: Switch(
-                                value: flag_permiso3,
-                                activeColor: Color.fromARGB(255, 57, 132, 59),
-                                onChanged: (value){
-                                  setState(() {
-                                    flag_permiso3=value;
-                                  });
-                                }),
-                              )
-                            ],
-                          ),
-                          SizedBox(height: 5,),
-                          Row(
-                            children:[
-                              Text('Permiso 4'),
-                              SizedBox(width: 10,),
-                              Transform.scale(
-                                scale: 0.7,
-                                child: Switch(
-                                value: flag_permiso4,
-                                activeColor: Color.fromARGB(255, 57, 132, 59),
-                                onChanged: (value){
-                                  setState(() {
-                                    flag_permiso4=value;
-                                  });
-                                }),
-                              )
-                            ],
-                          ),
-                          SizedBox(height: 5,),
-                          Row(
-                            children:[
-                              Text('Permiso 5'),
-                              SizedBox(width: 10,),
-                              Transform.scale(
-                                scale: 0.7,
-                                child: Switch(
-                                value: flag_permiso5,
-                                activeColor: Color.fromARGB(255, 57, 132, 59),
-                                onChanged: (value){
-                                  setState(() {
-                                    flag_permiso5=value;
-                                  });
-                                }),
-                              )
-                            ],
-                          ),
-                        ],
-                      )
-                    );
-                  },
-                ),
-                actions: [
-                FilledButton.tonal(
-                  child: Text('Cancelar'),
-                  onPressed: (){
-                    ctrl_nombre.text="";
-                    flag_permiso1=false;
-                    flag_permiso2=false;
-                    flag_permiso3=false;
-                    flag_permiso4=false;
-                    flag_permiso5=false;
-                    Navigator.of(context).pop();
-                  }, 
-                ),
-                FilledButton(
-                  child: Text('Agregar'),
-                  onPressed: (){
-                    setState(() {
-                      //int newID=lista[lista.length-1].ID + 1;
-                      //lista.add(Moderadores(ctrl_nombre.text, newID, flag_permiso1, flag_permiso2, flag_permiso3, flag_permiso4, flag_permiso5,'username'));
-                      ctrl_nombre.text="";
-                      flag_permiso1=false;
-                      flag_permiso2=false;
-                      flag_permiso3=false;
-                      flag_permiso4=false;
-                      flag_permiso5=false;
-                      Navigator.of(context).pop();
-                    });
-                  }, 
-                ),
-              ],
-              );
-            },
-          );
-        },
-      ),
-      body: Center(
-      child: Column(
-          children: [
-            SizedBox(height: 20,),
-            Text('Lista de moderadores',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height: 10,),
-            Container(
-              margin: EdgeInsets.all(10),
-              height: 30,
-              width: 200,
-              child: TextField(
-                controller: ctrl_query,
-                style: TextStyle(fontSize: 14),
-                decoration: InputDecoration(
-                  contentPadding: EdgeInsets.all(5),
-                  labelStyle: TextStyle(fontSize: 5),
-                  prefixIcon: const Icon(Icons.search,size: 20,),
-                  suffixIcon: iconSearchBarCancel? IconButton(
-                    icon: Icon(iconX,size: 15,),
-                    onPressed: (){
-                      setState(() {
-                        ctrl_query.text="";
-                        //lista=moderadoreslista;
-                        iconSearchBarCancel=false;
-                      });
-                    }, 
-                  ):null,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(width: 0.5,style: BorderStyle.solid),
-                  ),
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    if(value==""){
-                      //lista=moderadoreslista;
-                      iconSearchBarCancel=false;
-                    }else{
-                      iconSearchBarCancel=true;
-                      //lista=filter(value);
-                    }
-                  });
-                },
-              ),
-            ),
-            SizedBox(height: 5,),
-            Container(
-              height: MediaQuery.of(context).size.height*0.73,
-              child: SingleChildScrollView(
-                child: DataTable(
-                  sortColumnIndex: 0,
-                  sortAscending: sortAscending,
-                  dataTextStyle: TextStyle(fontSize: 15,),
-                  
-                  columns: <DataColumn>[
-                     DataColumn(
-                      label: Text('Nombre'),
-                      tooltip: 'Nombre',
-                      onSort: (columnIndex, ascending) {
-                        setState(() {
-                          sortAscending=!sortAscending;
-                          onSortColumn(columnIndex, ascending);
-                        });
-                      },
-                    ),
-                    const DataColumn( // PERMISO 1
-                      label: Expanded(child:Text('P1',textAlign: TextAlign.center,),),
-                      tooltip: 'permiso 1',
-                    ),
-                    const DataColumn( // PERMISO 2
-                      label: Expanded(child:Text('P2',textAlign: TextAlign.center,),),
-                      tooltip: 'permiso 2',
-                    ),
-                    const DataColumn( // PERMISO 3
-                      label: Expanded(child:Text('P3',textAlign: TextAlign.center,),),
-                      tooltip: 'permiso 3',
-                    ),
-                    const DataColumn( // PERMISO 4
-                      label: Expanded(child:Text('P4',textAlign: TextAlign.center,),),
-                      tooltip: 'permiso 4',
-                    ),
-                    const DataColumn( // PERMISO 5
-                      label: Expanded(child:Text('P5',textAlign: TextAlign.center,),),
-                      tooltip: 'permiso 5',
-                    ),
-                    const DataColumn( // EDITAR
-                      label: Text('editar/eliminar'),
-                    ),
-                  ], 
-                  rows: lista.map<DataRow>((Moderators data){
-                    return DataRow(
-                      //key: LocalKey(data.ID),
-                      cells: <DataCell>[
-                        DataCell(
-                          Text(data.userName)),
-                        DataCell(
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              IconButton(
-                                icon: Icon(Icons.edit,size: 17,),
-                                onPressed: () {
-                                },
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.delete,size: 17,color: const Color.fromARGB(255, 138, 37, 30),),
-                                onPressed: () {
-                                  setState(() {
-                                    //lista.removeWhere((element) => element.ID == data.ID);
-                                  });
-                                },
-                              ),
-                
-                            ],
-                          ),
-                        ),
-                      ],  
-                    );
-                  }).toList(),
-                ),
-              ),
-            ),
-            SizedBox(height: 70,),
-          ],
-        ),
-    ),
-  );
+  void initState() {
+    super.initState();
+    fetchModerators();
+    userDataPanel=Container();
   }
-/*
-  List<Moderadores> filter (String query){
-    List<Moderadores> tmp = moderadoreslista;
-    final cards = tmp.where((element) {
-      String lowerName = element.nombre.toLowerCase();
+
+  List<Moderators> filter (String query){
+    var  cards = allModerators.where((element) {
+      String lowerName = element.userName.toLowerCase();
       String lowerQuery = query.toLowerCase();
       return lowerName.contains(lowerQuery);
     }).toList();
     return cards;
   }
-  */
+
+  Future<void> fetchModerators()async{
+    var jsonlist = await Services().getAllModerators(widget.token);
+    List<Moderators> tmp=[];
+    for (var item in jsonlist){
+      print(item["user_name"]+' - '+item['id'].toString());
+      tmp.add(Moderators.fromJson(item));
+    }
+    setState(() {
+      allModerators=tmp;
+      filteredModerators=tmp;
+      isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return Scaffold(
+        body: Row(
+          children: [
+            Container(
+              width: (MediaQuery.of(context).size.width-drawerSize)/2,
+              child: Center(
+                child: CircularProgressIndicator(strokeWidth: 3,strokeAlign: 5,),
+              ),
+            ),
+            Container(
+              height: MediaQuery.of(context).size.height,
+              width: (MediaQuery.of(context).size.width-drawerSize)/2,
+              color: colorPanelEmpty,
+            ),
+          ],
+        ),
+      );
+    }
+    return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        child: Icon(iconAdd,color: color1,),
+        backgroundColor: appBarcolor,
+        elevation:5.0,
+        onPressed: (){
+          addModDialog();
+        },
+      ),
+      body: Container(
+        width: MediaQuery.of(context).size.width-drawerSize,
+        child: Row(
+          children: [
+            Container(
+              width: (MediaQuery.of(context).size.width-drawerSize)/2,
+              child: Column(
+                children: [
+                  buscador(),
+                  Container(
+                    height: MediaQuery.of(context).size.height-70,
+                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                      border: Border(
+                        right: BorderSide(width: 0.8, color: appBarcolorx,),
+                        top: BorderSide(width: 0.5, color: Colors.grey,)
+                      ),
+                    ),
+                    child: ListView.builder(
+                      scrollDirection: Axis.vertical,
+                      itemCount: filteredModerators.length,
+                      itemBuilder:(context,index){
+                        return ListTile(
+                          title: Text(filteredModerators[index].userName),
+                          hoverColor: colorPanelEmpty,
+                          splashColor: color24,
+                          tileColor: selectedPanel==index?colorPanelEmpty:Colors.white,
+
+                          trailing: (showPanel==true && selectedPanel==index)?closePanel:openPanel,
+                          onTap: () {
+                            setState(() {
+                              showPanel=!showPanel;
+                              if(showPanel==true){
+                                selectedPanel = index;
+                                userDataPanel = tabView(filteredModerators[index]);
+                              }else{
+                                selectedPanel = -1;
+                                userDataPanel = Container();
+                              }
+                            });
+                          },
+                        );
+                      }, 
+                    ),
+                  ),                  
+                ],
+              ),
+            ),
+            Container(
+              width: (MediaQuery.of(context).size.width-drawerSize)/2,
+              color: colorPanelEmpty,
+              child: userDataPanel,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget tabView(Moderators mod){
+    return DefaultTabController(
+      length: 2, // Número de pestañas
+      child: Scaffold(
+        appBar: AppBar(
+          toolbarHeight: 0,
+          bottom: TabBar(
+            indicatorColor: color6,
+            labelColor: color6,
+            tabs: [
+              Tab(text: 'Datos Personales'),
+              Tab(text: 'Transacciones'),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            // Contenido de la pestaña 1
+            Container(
+              padding: EdgeInsets.all(40),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.only(right: 5),width: 80,
+                        alignment: Alignment.bottomRight,
+                        child: Text('Nombre: ', style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: appBarcolor4,
+                        ),),
+                      ),
+                      Text(mod.userName, style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      )),
+                    ],
+                  ),
+                  SizedBox(height: 10,),
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.only(right: 5),width: 80,
+                        alignment: Alignment.bottomRight,
+                        child: Text('Correo: ', style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: appBarcolor4,
+                        ),),
+                      ),
+                      Text(mod.email, style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      )),
+                    ],
+                  ),
+                  
+                  Divider(height: 50,),
+                  Container(
+                    padding: EdgeInsets.zero,
+                    alignment: Alignment.bottomRight,
+                    child: FilledButton.tonal(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStatePropertyAll<Color>(Color.fromARGB(255, 255, 209, 203)),
+                      ),
+                      child: Text('Eliminar',style: TextStyle(color: Color.fromARGB(255, 221, 47, 35)),),
+                      onPressed: ()async{
+                        var response = await Services().deleteMod(mod.id, widget.token);
+                        fetchModerators();
+                      }, 
+                    ),
+                  ),
+                ]
+              ),
+            ),
+            // Contenido de la pestaña 2
+            Center(
+              child: TransMd(usuario: mod, token: widget.token),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buscador(){
+    return Container(
+      height: 70,
+      width: MediaQuery.of(context).size.width,
+      child: Container(
+        margin: EdgeInsets.all(15),
+        height: 30,
+        child: TextField(
+          controller: ctrl_query,
+          style: TextStyle(fontSize: 15),
+          cursorColor: color1,
+          cursorHeight: 23,
+          cursorWidth: 1.0,
+          decoration: InputDecoration(
+            contentPadding: EdgeInsets.all(5),
+            prefixIcon: const Icon(Icons.search,size: 20,),
+            suffixIcon: iconSearchBarCancel? IconButton(
+              icon: Icon(iconX,size: 17,),
+              onPressed: (){
+                setState(() {
+                  ctrl_query.text="";
+                  filteredModerators=allModerators;
+                  iconSearchBarCancel=false;
+                });
+              }, 
+            ):null,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(7)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(7)),
+              borderSide: BorderSide(color: color1, width: 1.0), // Borde en foco en gris
+            ),
+          ),
+          onChanged: (value) {
+            setState(() {
+              if(value==""){
+                filteredModerators=allModerators;
+                iconSearchBarCancel=false;
+              }else{
+                iconSearchBarCancel=true;
+                filteredModerators=filter(value);
+              }
+            });
+          },
+        ),
+      ),
+    );
+  }
+
+  void addModDialog()async{
+    showDialog(
+      barrierDismissible: false,
+      context: context, 
+      builder: (BuildContext context){
+        return AlertDialog(
+          backgroundColor: BGformFull,
+          insetPadding: EdgeInsets.all(20),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState){
+              return Container(
+                height:180,
+                width:MediaQuery.of(context).size.width*0.3,
+                child: Column(
+                  children: [
+                    Text('Registrar nuevo moderator',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 15),
+                    TextFormField(
+                      controller: ctrl_nombre,
+                      decoration: const InputDecoration(
+                        labelText: 'Nombre',
+                        labelStyle: TextStyle(fontSize: 14),
+                        enabled: true,
+                      ),
+                      onChanged: (value){
+                        setState((){
+                          if(errorHttp){
+                            errorHttp=false;
+                            errorAdvice="";
+                          }
+                        });
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    TextFormField(
+                      controller: ctrl_email,
+                      decoration: const InputDecoration(
+                        labelText: 'Correo electrónico',
+                        labelStyle: TextStyle(fontSize: 14),
+                        enabled: true,
+                      ),
+                    ),
+                    //generar contraseña aleatoria y enviarla al correo proporcionado 
+                  ],
+                )
+              );
+            },
+          ),
+          actions: [
+          FilledButton(
+            child: Text('Cancelar',style: TextStyle(color: fucsiaDark),),
+            style: ButtonStyle(
+              backgroundColor: MaterialStatePropertyAll<Color>(fucsiaTonal),
+              shape:MaterialStatePropertyAll(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                  side: BorderSide(width: 1.0,color: fucsiaTonalDark), )
+              ),                
+            ),
+            onPressed: (){
+              setState(() {
+                ctrl_nombre.text="";
+                ctrl_email.text="";
+                ctrl_contra.text="";
+                errorHttp=false;
+                Navigator.of(context).pop();
+              });
+            }, 
+          ),
+          FilledButton(
+            child: Text('Agregar'),
+            style: ButtonStyle(backgroundColor: MaterialStatePropertyAll<Color>(fucsia)),
+            onPressed: ()async{
+              var response;
+              try{
+                response = await Services().createMod(ctrl_nombre.text, ctrl_email.text, ctrl_email.text, widget.token);
+                print('create.CODE:'+response.statusCode.toString());
+                if (response.statusCode==201){
+                  errorHttp=false;
+                  setState(() {
+                    //limpia variables
+                    ctrl_nombre.text="";
+                    ctrl_email.text="";
+                    ctrl_contra.text="";
+                    errorHttp = true;
+                    errorAdvice='';
+                  });
+                  Navigator.of(context).pop();
+                }else if (response.statusCode==409){
+                  setState(() {
+                    print('ERROR ${response.statusCode}.${response.body}');
+                    warning();
+                  });
+                }
+              }catch(e){
+                setState(() {
+                  print('ERROR: $e !!!');
+                });
+                Navigator.of(context).pop();
+              }
+            }, 
+          ),
+        ],
+        );
+      },
+    );
+  }
+
+  void warning(){
+    toastification.show(
+      context: context,
+      type: ToastificationType.warning,
+      style: ToastificationStyle.flatColored,
+      alignment: Alignment.topCenter,
+      autoCloseDuration: const Duration(seconds: 4),
+      borderRadius: BorderRadius.circular(12.0),
+      boxShadow: highModeShadow,
+      showProgressBar: false,
+      title: Text('Usuario existente ',style: TextStyle(fontSize: 18),),
+      description: Text('El nombre de usuario ya ha sido registrado.',style: TextStyle(fontWeight: FontWeight.w500,fontSize: 16),),
+    );
+  }
+
 }

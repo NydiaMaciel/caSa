@@ -12,8 +12,6 @@ class Moderators {
     int id;
     String userName;
     String email;
-    bool maximizar=false;
-    double alt=70;
 
     Moderators({
         required this.id,

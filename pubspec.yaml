@@ -10,24 +10,22 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+  
   cupertino_icons: ^1.0.2
   font_awesome_flutter: ^10.7.0
   flutter_svg: ^2.0.10+1
   icon_font_generator: ^4.0.0
-
   timeline_tile: ^2.0.0
   getwidget: ^4.0.0
   http: ^1.2.0
   toastification: ^1.2.1
-  
   pretty_qr_code: ^3.2.1
   qr_code_scanner: ^1.0.1
   mobile_scanner: ^2.1.0 
-  #mobile_scanner: ^4.0.1
-  #flutter_barcode_sdk: ^2.2.6
   camera: ^0.10.5+9
-  
+
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1
@@ -41,26 +39,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+
   - images/logo.jpeg
-  - images/iconslib/wine-bottle-blank.svg
-  - images/Carrousel/pexels1.jpg
-  - images/Carrousel/pexels2.jpg
-  - images/Carrousel/pexels3.jpg
-  - images/Carrousel/pexels4.jpg
-  - images/iconslib/check_done.png
-  - images/iconslib/check_nope.png
-  - images/codigoQR.jpeg
-  - images/premios/regalo_2.png
-  - images/premios/regalo_3.png
-  - images/premios/regalo_4.png
-  - images/insignias/capture.png
-  - images/insignias/capture1.png
-  - images/insignias/capture2.png
-  - images/insignias/capture3.png
-  - images/insignias/capture4.png
-  - images/insignias/capture5.png
-  - images/insignias/capture6.png
-  - images/insignias/capture7.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

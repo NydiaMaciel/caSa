@@ -1,8 +1,12 @@
+import 'dart:developer';
+
 import 'package:demo_casa_3/screens/data/moderators.dart';
+import 'package:demo_casa_3/screens/data/rpusersClass.dart';
 import 'package:demo_casa_3/screens/generals/colores.dart';
 import 'package:demo_casa_3/screens/users/admin/mobile/mobileScaffold.dart';
 import 'package:demo_casa_3/screens/users/mod/mobileScaffoldMod.dart';
 import 'package:demo_casa_3/screens/users/scanner.dart';
+import 'package:demo_casa_3/services/services.dart';
 import 'package:demo_casa_3/services/sessions.dart';
 import 'package:flutter/material.dart';
 import 'package:getwidget/getwidget.dart';
@@ -25,12 +29,13 @@ class _RegisterQRState extends State<RegisterQR> {
   double buttonheight = 70;
   Color buttonColor = fucsiaTonalDark;
   late int idQR;
+  late Jugadores rpEscaneado;
 
   @override
   void initState(){
     super.initState();
     setState(() {
-      idQR = getIdByQr(widget.code);
+      idQR = int.parse(widget.code);//getIdInQrCode(widget.code);
     });
   }
 
@@ -159,6 +164,11 @@ class _RegisterQRState extends State<RegisterQR> {
               
               onPressed: () {  
                 if (cont>0){
+                  //get:RP.clients_referred
+                  
+                  getrpEscaneado();
+                  //add cont
+                  //patch:RP.clients_referred
                   if(widget.dataSesion.type=='administrator'){
                     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>mobileScaffold(user: widget.usuario,dataSesion: widget.dataSesion,)));
                   }else{
@@ -203,7 +213,14 @@ class _RegisterQRState extends State<RegisterQR> {
     );
   }
 
-  int getIdByQr(String texto) {
+  void getrpEscaneado()async{
+    //idQR
+    var usrscn = await Services().getUserById(idQR, widget.dataSesion.token);
+    rpEscaneado=usrscn;
+  }
+
+  int getIdInQrCode(String texto) {
+    print('CODECODECODE:::::: '+texto);
     RegExp regex = RegExp(r"/(\d+)$");
     RegExpMatch? match = regex.firstMatch(texto);
     if (match != null) {

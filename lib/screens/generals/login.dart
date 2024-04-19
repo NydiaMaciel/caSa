@@ -85,9 +85,18 @@ class _LoginState extends State <Login>{
                         controller: user,
                         decoration: InputDecoration(
                           labelText: 'Usuario',
+                          labelStyle: TextStyle(color: iconColorForm),
                           enabled: true,
                           suffixIcon: Icon(iconUsuario, size:sizeicon,color: iconColorForm,),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 1.5,
+                              style: BorderStyle.solid,
+                              color: appBarcolor4))
                         ),
+                        cursorColor: color1,
+                        cursorHeight: 23,
+                        cursorWidth: 1.0,
                         validator: (value) {
                           if(value!.length == 0){
                             return "Ingrese su nombre de usuario";
@@ -100,10 +109,20 @@ class _LoginState extends State <Login>{
                       TextFormField(
                         obscureText: false,
                         controller: pswd,
+                        cursorColor: color1,
+                        cursorHeight: 23,
+                        cursorWidth: 1.0,
                         decoration: InputDecoration(
                           labelText: 'Contraseña',
+                          labelStyle: TextStyle(color: iconColorForm),
                           enabled: true,
                           suffixIcon: Icon(iconPassword, size:sizeicon,color: iconColorForm,),
+                          hoverColor: fucsia,
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 1.5,
+                              style: BorderStyle.solid,
+                              color: appBarcolor4))
                         ),
                         validator: (value) {
                           RegExp regex = new RegExp(r'^.{6,}$');
@@ -160,6 +179,7 @@ class _LoginState extends State <Login>{
                             if(isAdmin){
                               print('Es ADMIN');
                               resAdministrator = await Services().login_Adm(user.text,pswd.text);
+                              print('::'+resAdministrator.toString());
                               if(resAdministrator!=null){
                                 resAdministrator!=null? print('CODE adm:${resAdministrator.statusCode}'): print('CODE adm: null');
                                 var data = jsonDecode(resAdministrator.body);

@@ -3,10 +3,12 @@ import 'package:demo_casa_3/screens/generals/colores.dart';
 import 'package:demo_casa_3/screens/data/moderators.dart';
 import 'package:demo_casa_3/screens/generals/login.dart';
 import 'package:demo_casa_3/screens/generals/settings.dart';
-import 'package:demo_casa_3/screens/users/admin/home.dart';
+import 'package:demo_casa_3/screens/users/admin/mobile/homeMB.dart';
 import 'package:demo_casa_3/screens/users/admin/mobile/transactions.dart';
 import 'package:demo_casa_3/screens/users/admin/mobile/modsMobile.dart';
 import 'package:demo_casa_3/screens/users/admin/mobile/rpsMobile.dart';
+import 'package:demo_casa_3/screens/users/mod/homeMD.dart';
+import 'package:demo_casa_3/screens/users/mod/transactions.dart';
 import 'package:demo_casa_3/screens/users/scanner.dart';
 import 'package:demo_casa_3/services/services.dart';
 import 'package:demo_casa_3/services/sessions.dart';
@@ -34,8 +36,25 @@ class _mobileScaffoldState extends State<mobileScaffold> {
   @override
   void initState(){
     super.initState();
-    bodyPage=Home();
-    tituloAppBar="";
+    if(widget.pag!=0){
+      switch(widget.pag){
+        case 1:
+          tituloAppBar="Escanear QR";
+          bodyPage=Scanner(usuario: widget.user,dataSesion: widget.dataSesion);
+          break;
+        case 2:
+          tituloAppBar="Mis transacciones";
+          bodyPage=TransactionsMD(token: widget.dataSesion.token, usuario: widget.user,);
+          break;
+        case 3:
+          tituloAppBar="Preferencias";
+          bodyPage=Settings(usuario: widget.user, dataSesion: widget.dataSesion,);
+          break;
+      }
+    }else{
+      tituloAppBar="";
+      bodyPage=HomeMB();
+    }
   }
   
   @override
@@ -66,7 +85,7 @@ class _mobileScaffoldState extends State<mobileScaffold> {
                       fontWeight: FontWeight.w500,
                     ),),
                   ),
-              ),
+                ),
               ListTile(
                 leading: const Icon(Icons.home),
                 title: const Text('Inicio'),
@@ -74,7 +93,7 @@ class _mobileScaffoldState extends State<mobileScaffold> {
                 onTap: () {
                   setState(() {
                     tituloAppBar="";
-                    bodyPage=Home();
+                    bodyPage=HomeMB();
                   });
                   Navigator.of(context).pop();
                 },
